@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Документ без названия</title>
+<style>
+.page{
+    border:solid 1px black;
+    width:800px;
+    margin:0px auto;
+    height:500px;
+    text-align:center;
+    position:relative
+}
+input[type='button']{
+    vertical-align:bottom;
+    display:block;
+    margin:0px auto;
+}
+</style>
+<script>
+window.onload = function(){
+    if(localStorage.getItem("flag")){
+document.getElementById("firstPoint").innerHTML=localStorage.getItem("startPoint");
+document.getElementById("secondPoint").innerHTML=localStorage.getItem("finishPoint");
+document.getElementById("distance").innerHTML=localStorage.getItem("distance");
+document.getElementById("cost").innerHTML=localStorage.getItem("cost");
+    }
+    else{
+        document.getElementsByClassName("page").item(0).innerHTML+="Ошибочка";
+        
+    }
+}
+</script>
+</head>
+<body>
+<div class="page">
+<h1>Новая страница</h1>
+Начальная точка: <label id="firstPoint"></label><br>
+Конечная точка: <label id="secondPoint"></label><br>
+Расстояние: <label id="distance"></label>
+<br>
+    Стоимость: <label id="cost"></label>
+</div>
+</body>
+</html>
