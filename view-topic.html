@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Просмотр темы</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div id="topicContent">
+            <!-- Содержимое темы будет загружено здесь -->
+        </div>
+        <p><a href="topics-list.html">Назад к списку тем</a></p>
+    </div>
+    
+    <script>
+        // Функция для отображения содержимого темы
+        function displayTopic() {
+            // Получаем ID темы из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const topicId = urlParams.get('topicId');
+            
+            // Получаем тему из localStorage
+            const topics = JSON.parse(localStorage.getItem('forumTopics')) || [];
+            const topic = topics[topicId];
+            
+            const topicContainer = document.getElementById('topicContent');
+            
+            if (topic) {
+                topicContainer.innerHTML = `
+                    <h1>${topic.title}</h1>
+                    <div class="topic-meta">Автор: ${topic.author} | Дата: ${topic.timestamp}</div>
+                    <div class="topic-message">
+                        ${formatMessage(topic.message)}
+                    </div>
+                `;
+            } else {
+                topicContainer.innerHTML = '<p>Тема не найдена.</p>';
+            }
+        }
+        
+        // Простая функция для сохранения переносов строк
+        function formatMessage(message) {
+            return message.replace(/\n/g, '<br>');
+        }
+        
+        // Вызываем функцию при загрузке страницы
+        displayTopic();
+    </script>
+</body>
+</html>

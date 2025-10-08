@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать новую тему</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Новая тема на форуме</h1>
+        <form id="topicForm">
+            <div class="form-group">
+                <label for="authorName">Ваше имя:</label>
+                <input type="text" id="authorName" name="authorName" required>
+            </div>
+            <div class="form-group">
+                <label for="topicTitle">Заголовок темы:</label>
+                <input type="text" id="topicTitle" name="topicTitle" required>
+            </div>
+            <div class="form-group">
+                <label for="topicMessage">Сообщение:</label>
+                <textarea id="topicMessage" name="topicMessage" rows="10" required></textarea>
+            </div>
+            <button type="submit">Создать тему</button>
+        </form>
+        <p><a href="topics-list.html">Вернуться к списку тем</a></p>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
