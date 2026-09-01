@@ -1,1144 +1,682 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MusicPro - Профессиональная музыка и монтаж видео</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* Общие стили */
-        * {
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Расписание уроков</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        background: #eeeeee;
+        color: #111;
+    }
+
+    /* Панель сверху — на печать не попадает */
+    .controls {
+        max-width: 1200px;
+        margin: 0 auto 20px;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+
+    .controls h2 {
+        margin-top: 0;
+        text-align: center;
+    }
+
+    .buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    button {
+        padding: 12px 25px;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .print {
+        background: #198754;
+    }
+
+    .print:hover {
+        background: #146c43;
+    }
+
+    .reset {
+        background: #dc3545;
+    }
+
+    .reset:hover {
+        background: #bb2d3b;
+    }
+
+
+    /* Лист */
+    .page {
+        width: 297mm;
+        min-height: 210mm;
+        margin: auto;
+        background: white;
+        padding: 12mm;
+
+        box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+    }
+
+    .title {
+        text-align: center;
+        font-size: 30px;
+        font-weight: 400;
+        letter-spacing: 1px;
+        margin-bottom: 8mm;
+    }
+
+
+    /* Таблица */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    th,
+    td {
+        border: 1.5px solid #222;
+    }
+
+    th {
+        height: 13mm;
+        font-size: 15px;
+        background: #f7f7f7;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    td {
+        height: 14mm;
+        text-align: center;
+        vertical-align: middle;
+        padding: 3px;
+        font-size: 13px;
+    }
+
+    /* Номер урока */
+    .lesson-number {
+        width: 7%;
+        font-size: 13px;
+        font-weight: bold;
+        background: #fafafa;
+    }
+
+    /* Дни */
+    .day {
+        width: 15.5%;
+    }
+
+    /* Название предмета */
+    .lesson {
+        font-size: 12px;
+        line-height: 1.15;
+    }
+
+    .lesson strong {
+        display: block;
+        font-size: 11px;
+        margin-bottom: 2px;
+    }
+
+    .empty {
+        color: #777;
+        font-size: 11px;
+    }
+
+
+    /* Поле редактирования */
+    td[contenteditable="true"] {
+        cursor: text;
+    }
+
+    td[contenteditable="true"]:focus {
+        outline: 2px solid #4285f4;
+        background: #eef5ff;
+    }
+
+
+    /* Печать */
+    @media print {
+
+        @page {
+            size: A4 landscape;
             margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
-        :root {
-            --primary-color: #8a2be2;
-            --primary-dark: #6a1bb0;
-            --secondary-color: #ff4081;
-            --dark-color: #1a1a2e;
-            --light-color: #f8f9fa;
-            --gray-color: #6c757d;
-            --success-color: #4CAF50;
-        }
-        
+
         body {
-            background-color: #0f0f1a;
-            color: #e0e0e0;
-            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            background: white;
         }
-        
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
+
+        .controls {
+            display: none !important;
         }
-        
-        /* Шапка и навигация */
-        header {
-            background-color: rgba(26, 26, 46, 0.95);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            border-bottom: 1px solid rgba(138, 43, 226, 0.2);
-        }
-        
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-        }
-        
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .logo i {
-            color: var(--secondary-color);
-        }
-        
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 30px;
-        }
-        
-        nav a {
-            color: #e0e0e0;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 1.1rem;
-            padding: 8px 0;
-            position: relative;
-            transition: color 0.3s;
-        }
-        
-        nav a:hover, nav a.active {
-            color: var(--primary-color);
-        }
-        
-        nav a.active::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 2px;
-            background-color: var(--primary-color);
-            bottom: 0;
-            left: 0;
-        }
-        
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-        
-        /* Основной контент */
-        main {
-            min-height: calc(100vh - 200px);
-            padding: 40px 0;
-        }
-        
+
         .page {
-            display: none;
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        
-        .page.active {
-            display: block;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* Герой секция */
-        .hero {
-            text-align: center;
-            padding: 60px 0;
-            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1) 0%, rgba(26, 26, 46, 0.8) 100%);
-            border-radius: 20px;
-            margin-bottom: 50px;
-            border: 1px solid rgba(138, 43, 226, 0.2);
-        }
-        
-        .hero h1 {
-            font-size: 2.8rem;
-            margin-bottom: 20px;
-            color: #fff;
-            line-height: 1.2;
-        }
-        
-        .hero p {
-            font-size: 1.2rem;
-            max-width: 800px;
-            margin: 0 auto 30px;
-            color: #b0b0b0;
-        }
-        
-        .btn {
-            display: inline-block;
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 14px 32px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
-        }
-        
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(138, 43, 226, 0.4);
-        }
-        
-        /* Услуги */
-        .services-section h2, .why-us-section h2 {
-            text-align: center;
-            font-size: 2.2rem;
-            margin-bottom: 40px;
-            color: #fff;
-        }
-        
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-bottom: 50px;
-        }
-        
-        .service-card {
-            background-color: rgba(26, 26, 46, 0.8);
-            border-radius: 15px;
-            padding: 30px;
-            border: 1px solid rgba(138, 43, 226, 0.2);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .service-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            border-color: rgba(138, 43, 226, 0.4);
-        }
-        
-        .service-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: #fff;
-        }
-        
-        .service-card p {
-            color: #b0b0b0;
-            margin-bottom: 20px;
-        }
-        
-        .service-icon {
-            font-size: 2rem;
-            margin-bottom: 15px;
-            color: var(--primary-color);
-        }
-        
-        .price {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--secondary-color);
-            margin-bottom: 15px;
-        }
-        
-        .service-btn {
-            background-color: transparent;
-            color: var(--primary-color);
-            border: 1px solid var(--primary-color);
-            padding: 10px 25px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        
-        .service-btn:hover {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        /* Почему выбирают нас */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-bottom: 50px;
-        }
-        
-        .feature-card {
-            background-color: rgba(26, 26, 46, 0.6);
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            border: 1px solid rgba(138, 43, 226, 0.1);
-        }
-        
-        .feature-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-        
-        .feature-card p {
-            color: #b0b0b0;
-        }
-        
-        /* Заметки */
-        .notes-section h2 {
-            text-align: center;
-            font-size: 2.2rem;
-            margin-bottom: 30px;
-            color: #fff;
-        }
-        
-        .notes-stats {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-box {
-            background-color: rgba(26, 26, 46, 0.8);
-            padding: 20px 30px;
-            border-radius: 15px;
-            text-align: center;
-            border: 1px solid rgba(138, 43, 226, 0.2);
-        }
-        
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--secondary-color);
-        }
-        
-        .stat-label {
-            color: #b0b0b0;
-            font-size: 0.9rem;
-        }
-        
-        .notes-list {
-            margin-bottom: 50px;
-        }
-        
-        .note-item {
-            background-color: rgba(26, 26, 46, 0.8);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-            border-left: 5px solid var(--primary-color);
-            border: 1px solid rgba(138, 43, 226, 0.2);
-        }
-        
-        .note-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .note-title {
-            font-size: 1.3rem;
-            color: #fff;
-        }
-        
-        .note-date {
-            color: var(--gray-color);
-            font-size: 0.9rem;
-        }
-        
-        .note-rating {
-            color: gold;
-            margin-bottom: 10px;
-        }
-        
-        .note-content {
-            color: #b0b0b0;
-            margin-bottom: 15px;
-        }
-        
-        .delete-btn {
-            background-color: rgba(255, 64, 129, 0.1);
-            color: var(--secondary-color);
-            border: 1px solid var(--secondary-color);
-            padding: 8px 20px;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .delete-btn:hover {
-            background-color: var(--secondary-color);
-            color: white;
-        }
-        
-        /* Форма создания заметки */
-        .note-form {
-            background-color: rgba(26, 26, 46, 0.8);
-            border-radius: 15px;
-            padding: 30px;
-            border: 1px solid rgba(138, 43, 226, 0.2);
-        }
-        
-        .note-form h3 {
-            font-size: 1.5rem;
-            margin-bottom: 25px;
-            color: #fff;
-            text-align: center;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #fff;
-            font-weight: 500;
-        }
-        
-        .required-star {
-            color: var(--secondary-color);
-        }
-        
-        .form-control {
-            width: 100%;
-            padding: 12px 15px;
-            background-color: rgba(40, 40, 60, 0.8);
-            border: 1px solid rgba(138, 43, 226, 0.3);
-            border-radius: 8px;
-            color: #fff;
-            font-size: 1rem;
-        }
-        
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-        
-        .rating-stars {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .rating-star {
-            font-size: 1.5rem;
-            color: #444;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        
-        .rating-star.active {
-            color: gold;
-        }
-        
-        /* Контакты */
-        .contacts-section h2 {
-            text-align: center;
-            font-size: 2.2rem;
-            margin-bottom: 40px;
-            color: #fff;
-        }
-        
-        .contacts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-bottom: 50px;
-        }
-        
-        .contact-card {
-            background-color: rgba(26, 26, 46, 0.8);
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            border: 1px solid rgba(138, 43, 226, 0.2);
-            transition: transform 0.3s;
-        }
-        
-        .contact-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .contact-icon {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin-bottom: 15px;
-        }
-        
-        .contact-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-        
-        .contact-card p {
-            color: #b0b0b0;
-        }
-        
-        .contact-link {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .contact-link:hover {
-            text-decoration: underline;
-        }
-        
-        /* Футер */
-        footer {
-            background-color: rgba(26, 26, 46, 0.95);
-            padding: 40px 0 20px;
-            border-top: 1px solid rgba(138, 43, 226, 0.2);
-        }
-        
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .footer-section {
-            flex: 1;
-            min-width: 250px;
-        }
-        
-        .footer-section h3 {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            color: #fff;
-        }
-        
-        .footer-links {
-            list-style: none;
-        }
-        
-        .footer-links li {
-            margin-bottom: 10px;
-        }
-        
-        .footer-links a {
-            color: #b0b0b0;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        
-        .footer-links a:hover {
-            color: var(--primary-color);
-        }
-        
-        .social-links {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .social-links a {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background-color: rgba(138, 43, 226, 0.1);
-            color: var(--primary-color);
-            border-radius: 50%;
-            font-size: 1.2rem;
-            transition: all 0.3s;
-        }
-        
-        .social-links a:hover {
-            background-color: var(--primary-color);
-            color: white;
-            transform: translateY(-3px);
-        }
-        
-        .copyright {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: #b0b0b0;
-            font-size: 0.9rem;
-        }
-        
-        .copyright-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 10px;
-        }
-        
-        .copyright-links a {
-            color: #b0b0b0;
-            text-decoration: none;
-        }
-        
-        .copyright-links a:hover {
-            color: var(--primary-color);
-        }
-        
-        /* Адаптивность */
-        @media (max-width: 992px) {
-            .hero h1 {
-                font-size: 2.3rem;
-            }
-            
-            .services-grid, .features-grid, .contacts-grid {
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .header-container {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            nav ul {
-                gap: 15px;
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            
-            .hero {
-                padding: 40px 20px;
-            }
-            
-            .hero h1 {
-                font-size: 2rem;
-            }
-            
-            .notes-stats {
-                flex-direction: column;
-                align-items: center;
-                gap: 20px;
-            }
-            
-            .stat-box {
-                width: 80%;
-            }
-            
-            .footer-content {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-            
-            .mobile-menu-btn {
-                display: block;
-                position: absolute;
-                top: 20px;
-                right: 20px;
-            }
-            
-            nav {
-                display: none;
-                width: 100%;
-                margin-top: 15px;
-            }
-            
-            nav.active {
-                display: block;
-            }
-            
-            nav ul {
-                flex-direction: column;
-                gap: 0;
-            }
-            
-            nav li {
-                width: 100%;
-                text-align: center;
-                border-bottom: 1px solid rgba(138, 43, 226, 0.2);
-            }
-            
-            nav a {
-                display: block;
-                padding: 15px;
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .hero h1 {
-                font-size: 1.8rem;
-            }
-            
-            .btn {
-                padding: 12px 25px;
-            }
-            
-            .service-card, .note-form {
-                padding: 20px;
-            }
-        }
-        
-        /* Специальные элементы */
-        .highlight {
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-        
-        .discount-badge {
-            display: inline-block;
-            background-color: var(--secondary-color);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-        
-        .separator {
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
-            margin: 40px 0;
-        }
-    </style>
+            width: 297mm;
+            height: 210mm;
+            min-height: 210mm;
+            padding: 10mm;
+
+            margin: 0;
+            box-shadow: none;
+        }
+
+        .title {
+            font-size: 27px;
+            margin-bottom: 6mm;
+        }
+
+        th {
+            height: 12mm;
+            font-size: 14px;
+        }
+
+        td {
+            height: 14mm;
+            font-size: 12px;
+        }
+
+        .lesson {
+            font-size: 11px;
+        }
+
+        .lesson strong {
+            font-size: 10px;
+        }
+    }
+</style>
 </head>
+
+
 <body>
-    <!-- Шапка сайта -->
-    <header>
-        <div class="container header-container">
-            <a href="#" class="logo" onclick="showPage('home'); return false;">
-                <i class="fas fa-music"></i>
-                MusicPro
-            </a>
-            
-            <button class="mobile-menu-btn" id="mobileMenuBtn">
-                <i class="fas fa-bars"></i>
-            </button>
-            
-            <nav id="mainNav">
-                <ul>
-                    <li><a href="#" class="nav-link active" onclick="showPage('home'); return false;">Главная</a></li>
-                    <li><a href="#" class="nav-link" onclick="showPage('services'); return false;">Услуги</a></li>
-                    <li><a href="#" class="nav-link" onclick="showPage('why-us'); return false;">Почему мы</a></li>
-                    <li><a href="#" class="nav-link" onclick="showPage('notes'); return false;">Заметки</a></li>
-                    <li><a href="#" class="nav-link" onclick="showPage('contacts'); return false;">Контакты</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-    
-    <!-- Основной контент -->
-    <main class="container">
-        <!-- Главная страница -->
-        <section id="home" class="page active">
-            <div class="hero">
-                <h1>Профессиональная музыка и монтаж видео</h1>
-                <p>Мы предлагаем эксклюзивную музыку для ваших проектов, качественные превью для видео и профессиональный монтаж. Все услуги по доступным ценам в рублях.</p>
-                <a href="#" class="btn" onclick="showPage('services'); return false;">Выбрать услугу</a>
-            </div>
-            
-            <div class="services-section">
-                <h2>Наши услуги</h2>
-                <div class="services-grid">
-                    <div class="service-card">
-                        <div class="service-icon">
-                            <i class="fas fa-music"></i>
-                        </div>
-                        <h3>Продажа музыки</h3>
-                        <p>Эксклюзивные треки различных жанров для ваших проектов. Высокое качество и уникальность гарантированы.</p>
-                        <div class="price">от 1000 руб.</div>
-                        <button class="service-btn" onclick="showPage('services');">Заказать</button>
+
+<!-- Панель управления -->
+<div class="controls">
+
+    <h2>Расписание уроков</h2>
+
+    <p style="text-align:center;">
+        При необходимости можно нажать на название урока и изменить его.
+    </p>
+
+    <div class="buttons">
+
+        <button class="print" onclick="window.print()">
+            🖨 Распечатать
+        </button>
+
+        <button class="reset" onclick="resetlist()">
+            ↺ Вернуть исходное расписание
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- ПЕЧАТНЫЙ ЛИСТ -->
+<div class="page">
+
+    <div class="title">
+        РАСПИСАНИЕ УРОКОВ
+    </div>
+
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th class="lesson-number">
+                    №
+                </th>
+
+                <th class="day">
+                    Понедельник
+                </th>
+
+                <th class="day">
+                    Вторник
+                </th>
+
+                <th class="day">
+                    Среда
+                </th>
+
+                <th class="day">
+                    Четверг
+                </th>
+
+                <th class="day">
+                    Пятница
+                </th>
+
+                <th class="day">
+                    Суббота
+                </th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody>
+
+            <!-- 1 -->
+            <tr>
+
+                <td class="lesson-number">
+                    1
+                </td>
+
+                <td contenteditable="true">
+                    <span class="empty">
+                        
+                    </span>
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
                     </div>
-                    
-                    <div class="service-card">
-                        <div class="service-icon">
-                            <i class="fas fa-image"></i>
-                        </div>
-                        <h3>Превью для видео</h3>
-                        <p>Яркие и запоминающиеся превью для ваших видео, которые привлекут внимание зрителей.</p>
-                        <div class="price">от 500 руб.</div>
-                        <button class="service-btn" onclick="showPage('services');">Заказать</button>
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
                     </div>
-                    
-                    <div class="service-card">
-                        <div class="service-icon">
-                            <i class="fas fa-film"></i>
-                        </div>
-                        <h3>Монтаж видео</h3>
-                        <p>Профессиональный монтаж ваших видео с эффектами, цветокоррекцией и качественным звуком.</p>
-                        <div class="price">от 300 руб.</div>
-                        <button class="service-btn" onclick="showPage('services');">Заказать</button>
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
                     </div>
-                </div>
-            </div>
-            
-            <div class="discount-badge">Скидки на товары</div>
-            <p>На нашем сайте будут появляться выгодные скидки для вас</p>
-        </section>
-        
-        <!-- Услуги (детальная страница) -->
-        <section id="services" class="page">
-            <h2>Наши услуги</h2>
-            <div class="separator"></div>
-            
-            <div class="services-grid">
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-music"></i>
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
                     </div>
-                    <h3>Продажа музыки</h3>
-                    <p>Эксклюзивные треки различных жанров для ваших проектов. Высокое качество и уникальность гарантированы ✅</p>
-                    <div class="price">от 1000 руб.</div>
-                    <button class="service-btn">Заказать</button>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-image"></i>
-                    </div>
-                    <h3>❤️ Превью для видео</h3>
-                    <p>Яркие и запоминающиеся превью для ваших видео, которые привлекут внимание зрителей 🎵</p>
-                    <div class="price">от 500 руб.</div>
-                    <button class="service-btn">Заказать</button>
-                </div>
-                
-                <div class="service-card">
-                    <div class="service-icon">
-                        <i class="fas fa-film"></i>
-                    </div>
-                    <h3>🌿 Монтаж видео</h3>
-                    <p>Профессиональный монтаж ваших видео с эффектами, цветокоррекцией и качественным звуком 🎵</p>
-                    <div class="price">от 300 руб.</div>
-                    <button class="service-btn">Заказать</button>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Почему выбирают нас -->
-        <section id="why-us" class="page">
-            <h2>Почему выбирают нас</h2>
-            <div class="separator"></div>
-            
-            <div class="features-grid">
-                <div class="feature-card">
-                    <i class="fas fa-bolt service-icon"></i>
-                    <h3>Быстрое выполнение</h3>
-                    <p>Все заказы выполняются в кратчайшие сроки без потери качества</p>
-                </div>
-                
-                <div class="feature-card">
-                    <i class="fas fa-star service-icon"></i>
-                    <h3>Высокое качество</h3>
-                    <p>Мы используем профессиональное оборудование и программное обеспечение</p>
-                </div>
-                
-                <div class="feature-card">
-                    <i class="fas fa-edit service-icon"></i>
-                    <h3>Бесплатные правки</h3>
-                    <p>Предоставляем бесплатные правки в течение 3 дней после выполнения заказа</p>
-                </div>
-                
-                <div class="feature-card">
-                    <i class="fas fa-tag service-icon"></i>
-                    <h3>Доступные цены</h3>
-                    <p>Мы предлагаем цены в рублях без скрытых комиссий</p>
-                </div>
-            </div>
-            
-            <div class="discount-badge">Скидки на товары</div>
-            <p>На нашем сайте будут появляться выгодные скидки для вас</p>
-        </section>
-        
-        <!-- Заметки -->
-        <section id="notes" class="page">
-            <h2>Мои заметки</h2>
-            <p class="text-center">Личные заметки и оценки (видны только вам)</p>
-            
-            <div class="notes-stats">
-                <div class="stat-box">
-                    <div class="stat-value">3</div>
-                    <div class="stat-label">Всего заметок</div>
-                </div>
-                
-                <div class="stat-box">
-                    <div class="stat-value">5.0</div>
-                    <div class="stat-label">Средняя оценка</div>
-                </div>
-            </div>
-            
-            <div class="notes-list">
-                <div class="note-item">
-                    <div class="note-header">
-                        <div class="note-title"> </div>
-                        <div class="note-date">05.02.2026</div>
-                    </div>
-                    <div class="note-rating">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <div class="note-content">
-                        <strong> </strong><br>
+                </td>
+
+                <td contenteditable="true">
+                    <span class="empty">
+                        
+                    </span>
+                </td>
+
+            </tr>
+
+
+            <!-- 2 -->
+            <tr>
+
+                <td class="lesson-number">
+                    2
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
                          <br>
-                        <strong> </strong>
                     </div>
-                    <button class="delete-btn">Удалить</button>
-                </div>
-            </div>
-            
-            <div class="note-form">
-                <h3>Создать заметку</h3>
-                
-                <div class="form-group">
-                    <label for="noteTitle">Название заметки <span class="required-star">*</span></label>
-                    <input type="text" id="noteTitle" class="form-control" placeholder="Введите название">
-                </div>
-                
-                <div class="form-group">
-                    <label for="noteText">Текст заметки <span class="required-star">*</span></label>
-                    <textarea id="noteText" class="form-control" rows="5" placeholder="Введите текст заметки..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Ваша оценка <span class="required-star">*</span></label>
-                    <div class="rating-stars">
-                        <span class="rating-star" data-value="1">☆</span>
-                        <span class="rating-star" data-value="2">☆</span>
-                        <span class="rating-star" data-value="3">☆</span>
-                        <span class="rating-star" data-value="4">☆</span>
-                        <span class="rating-star active" data-value="5">☆</span>
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
                     </div>
-                </div>
-                
-                <button class="btn" style="width: 100%;">Сохранить заметку</button>
-            </div>
-        </section>
-        
-        <!-- Контакты -->
-        <section id="contacts" class="page">
-            <h2>Контакты</h2>
-            <div class="separator"></div>
-            
-            <div class="contacts-grid">
-                <div class="contact-card">
-                    <div class="contact-icon">
-                        <i class="fab fa-telegram"></i>
+                </td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+            </tr>
+
+
+            <!-- 3 -->
+            <tr>
+
+                <td class="lesson-number">
+                    3
+                </td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
                     </div>
-                    <h3>Telegram</h3>
-                    <p>Свяжитесь со мной через Telegram для быстрой связи</p>
-                    <a href="#" class="contact-link">@musicpro</a>
-                </div>
-                
-                <div class="contact-card">
-                    <div class="contact-icon">
-                        <i class="fas fa-envelope"></i>
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
                     </div>
-                    <h3>Моя почта</h3>
-                    <p>Напишите мне на электронную почту для детального обсуждения</p>
-                    <a href="mailto:info@musicpro.ru" class="contact-link">info@musicpro.ru</a>
-                </div>
-                
-                <div class="contact-card">
-                    <div class="contact-icon">
-                        <i class="fas fa-comments"></i>
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
                     </div>
-                    <h3>Общий чат TG</h3>
-                    <p>Присоединяйтесь к нашему общему чату в Telegram</p>
-                    <a href="#" class="contact-link">MusicPro Community</a>
-                </div>
-            </div>
-        </section>
-    </main>
-    
-    <!-- Футер -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>MusicPro</h3>
-                    <p>Профессиональная музыка и монтаж видео. Качественные услуги по доступным ценам.</p>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-telegram"></i></a>
-                        <a href="#"><i class="fab fa-vk"></i></a>
-                        <a href="#"><i class="fab fa-youtube"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
                     </div>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>Услуги</h3>
-                    <ul class="footer-links">
-                        <li><a href="#" onclick="showPage('services'); return false;">Продажа музыки</a></li>
-                        <li><a href="#" onclick="showPage('services'); return false;">Превью для видео</a></li>
-                        <li><a href="#" onclick="showPage('services'); return false;">Монтаж видео</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>Навигация</h3>
-                    <ul class="footer-links">
-                        <li><a href="#" onclick="showPage('home'); return false;">Главная</a></li>
-                        <li><a href="#" onclick="showPage('why-us'); return false;">Почему мы</a></li>
-                        <li><a href="#" onclick="showPage('notes'); return false;">Заметки</a></li>
-                        <li><a href="#" onclick="showPage('contacts'); return false;">Контакты</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="copyright">
-                <p>&copy; 2026 MusicPro. Все права защищены.</p>
-                <div class="copyright-links">
-                    <a href="#">Политика конфиденциальности</a>
-                    <a href="#">Пользовательское соглашение</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-    
-    <script>
-        // Функция для переключения страниц
-        function showPage(pageId) {
-            // Скрыть все страницы
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(page => {
-                page.classList.remove('active');
-            });
-            
-            // Показать выбранную страницу
-            const activePage = document.getElementById(pageId);
-            activePage.classList.add('active');
-            
-            // Обновить активную ссылку в навигации
-            const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-            });
-            
-            // Найти и активировать соответствующую ссылку
-            navLinks.forEach(link => {
-                if (link.textContent === 'Главная' && pageId === 'home') {
-                    link.classList.add('active');
-                } else if (link.textContent === 'Услуги' && pageId === 'services') {
-                    link.classList.add('active');
-                } else if (link.textContent === 'Почему мы' && pageId === 'why-us') {
-                    link.classList.add('active');
-                } else if (link.textContent === 'Заметки' && pageId === 'notes') {
-                    link.classList.add('active');
-                } else if (link.textContent === 'Контакты' && pageId === 'contacts') {
-                    link.classList.add('active');
-                }
-            });
-            
-            // Закрыть мобильное меню, если оно открыто
-            const nav = document.getElementById('mainNav');
-            if (nav.classList.contains('active')) {
-                nav.classList.remove('active');
-            }
-            
-            return false;
+                </td>
+
+                <td contenteditable="true"></td>
+
+            </tr>
+
+
+            <!-- 4 -->
+            <tr>
+
+                <td class="lesson-number">
+                    4
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                         
+                    </div>
+                </td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+            </tr>
+
+
+            <!-- 5 -->
+            <tr>
+
+                <td class="lesson-number">
+                    5
+                </td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
+                    </div>
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
+                    </div>
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
+                    </div>
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
+                    </div>
+                </td>
+
+                <td contenteditable="true"></td>
+
+            </tr>
+
+
+            <!-- 6 -->
+            <tr>
+
+                <td class="lesson-number">
+                    6
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
+                    </div>
+                </td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+            </tr>
+
+
+            <!-- 7 -->
+            <tr>
+
+                <td class="lesson-number">
+                    7
+                </td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
+                    </div>
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
+                    </div>
+                </td>
+
+                <td contenteditable="true">
+                    <div class="lesson">
+                        <strong></strong>
+                        
+                    </div>
+                </td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+            </tr>
+
+
+            <!-- 8 -->
+            <tr>
+
+                <td class="lesson-number">
+                    8
+                </td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+            </tr>
+
+
+            <!-- 9 -->
+            <tr>
+
+                <td class="lesson-number">
+                    9
+                </td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+                <td contenteditable="true"></td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<script>
+
+    /*
+        Сохраняем изменения,
+        которые пользователь сделал в таблице.
+    */
+
+    const cells =
+        document.querySelectorAll(
+            'td[contenteditable="true"]'
+        );
+
+    cells.forEach((cell, index) => {
+
+        const saved =
+            localStorage.getItem(
+                "lesson_" + index
+            );
+
+        if (saved !== null) {
+            cell.innerHTML = saved;
         }
+
+
+        cell.addEventListener("input", () => {
+
+            localStorage.setItem(
+                "lesson_" + index,
+                cell.innerHTML
+            );
+
+        });
+
+    });
+
+
+    /*
+        Вернуть исходное расписание
+    */
+
+    function resetlist() {
+
+        if/*если*/ (
+            confirm/*подтвержаем*/(
+                "Вернуть пустое расписание?")
+        )
+        if(
+            confirm(
+                "Точно вернуть?")
+        )
+        if(
+            confirm(
+                "Уверены?")
+        )
+        if(
+            confirm("Точно?")
+        )
+        if(
+            confirm("Уверены?")
+        )
+        if(
+            confirm("Может не надо?")
+        )
+        if(
+            confirm("А давай нет?Если согласны нажмите нет")
+        )
+        if(
+            confirm("Последняя попытка")
+        )
         
-        // Инициализация рейтинга звезд
-        const stars = document.querySelectorAll('.rating-star');
-        stars.forEach(star => {
-            star.addEventListener('click', function() {
-                const value = this.getAttribute('data-value');
-                
-                // Обновить все звезды
-                stars.forEach(s => {
-                    if (s.getAttribute('data-value') <= value) {
-                        s.classList.add('active');
-                        s.textContent = '★';
-                    } else {
-                        s.classList.remove('active');
-                        s.textContent = '☆';
-                    }
-                });
+         {
+
+            cells.forEach((cell, index) => {
+
+                localStorage.removeItem(
+                    "lesson_" + index
+                );
+
             });
-        });
-        
-        // Мобильное меню
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const mainNav = document.getElementById('mainNav');
-        
-        mobileMenuBtn.addEventListener('click', function() {
-            mainNav.classList.toggle('active');
-        });
-        
-        // Закрытие мобильного меню при клике на ссылку
-        const navLinks = document.querySelectorAll('.nav-link');
-        navLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
-                    mainNav.classList.remove('active');
-                }
-            });
-        });
-        
-        // Удаление заметки
-        const deleteBtn = document.querySelector('.delete-btn');
-        deleteBtn.addEventListener('click', function() {
-            if (confirm('Вы уверены, что хотите удалить эту заметку?')) {
-                const noteItem = this.closest('.note-item');
-                noteItem.style.opacity = '0';
-                noteItem.style.transform = 'translateX(-20px)';
-                
-                setTimeout(() => {
-                    noteItem.remove();
-                    // Обновить статистику
-                    const totalNotes = document.querySelector('.stat-value');
-                    totalNotes.textContent = parseInt(totalNotes.textContent) - 1;
-                }, 300);
-            }
-        });
-        
-        // Создание новой заметки
-        const saveNoteBtn = document.querySelector('.note-form .btn');
-        saveNoteBtn.addEventListener('click', function() {
-            const title = document.getElementById('noteTitle').value;
-            const text = document.getElementById('noteText').value;
-            const rating = document.querySelectorAll('.rating-star.active').length;
-            
-            if (!title || !text || rating === 0) {
-                alert('Пожалуйста, заполните все обязательные поля!');
-                return;
-            }
-            
-            // Создать новую заметку
-            const notesList = document.querySelector('.notes-list');
-            const newNote = document.createElement('div');
-            newNote.className = 'note-item';
-            newNote.innerHTML = `
-                <div class="note-header">
-                    <div class="note-title">${title}</div>
-                    <div class="note-date">${new Date().toLocaleDateString('ru-RU')}</div>
-                </div>
-                <div class="note-rating">
-                    ${'<i class="fas fa-star"></i>'.repeat(rating)}
-                </div>
-                <div class="note-content">${text}</div>
-                <button class="delete-btn">Удалить</button>
-            `;
-            
-            notesList.prepend(newNote);
-            
-            // Сбросить форму
-            document.getElementById('noteTitle').value = '';
-            document.getElementById('noteText').value = '';
-            stars.forEach(s => {
-                s.classList.remove('active');
-                s.textContent = '☆';
-            });
-            stars[4].classList.add('active');
-            stars[4].textContent = '★';
-            
-            // Обновить статистику
-            const totalNotes = document.querySelector('.stat-value');
-            totalNotes.textContent = parseInt(totalNotes.textContent) + 1;
-            
-            // Показать уведомление
-            alert('Заметка успешно создана!');
-            
-            // Добавить обработчик удаления для новой заметки
-            newNote.querySelector('.delete-btn').addEventListener('click', function() {
-                if (confirm('Вы уверены, что хотите удалить эту заметку?')) {
-                    const noteItem = this.closest('.note-item');
-                    noteItem.style.opacity = '0';
-                    noteItem.style.transform = 'translateX(-20px)';
-                    
-                    setTimeout(() => {
-                        noteItem.remove();
-                        // Обновить статистику
-                        const totalNotes = document.querySelector('.stat-value');
-                        totalNotes.textContent = parseInt(totalNotes.textContent) - 1;
-                    }, 300);
-                }
-            });
-        });
-    </script>
+
+            location.reload();
+        }
+    }
+
+</script>
+
 </body>
 </html>
